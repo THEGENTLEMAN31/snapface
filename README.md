@@ -1,15 +1,18 @@
 # SnapFace
 
-Filtres faciaux **temps réel** en Python : détection de visage par **OpenCV + YuNet (ONNX)** et effets de déformation géométrique calculés en **PyTorch** (`torch.nn.functional.grid_sample`). Conçu pour produire un rendu propre, enregistrable en MP4 pour un post LinkedIn.
+Filtres faciaux **temps réel** en Python. Détection de visage par **OpenCV + YuNet (ONNX)**, effets de déformation géométrique calculés en **PyTorch** (`torch.nn.functional.grid_sample`), affichage live et enregistrement MP4.
 
-## Démarrage (environnement déjà prêt)
+## Démarrage
+
+Environnement virtuel déjà prêt (Python 3.14, torch, opencv-python, numpy).
 
 ```bash
 cd /home/jose/projects/snap_face
 ./.venv/bin/python main.py
 ```
 
-Webcam par défaut (indice 0). Touches :
+Ouvre ta webcam (indice 0) dans une fenêtre « SnapFace ». Touches :
+
 - `1`..`6` : changer d'effet
 - `q` ou `Échap` : quitter
 
@@ -19,7 +22,7 @@ Webcam par défaut (indice 0). Touches :
 # Webcam live avec affichage (nom d'effet + FPS en haut à gauche)
 ./.venv/bin/python main.py
 
-# Clean : pas d'overlay, + enregistrement MP4 pour LinkedIn
+# Enregistrement MP4 (propre, sans overlay)
 ./.venv/bin/python main.py --clean --record post.mp4
 
 # Mode démo : cycle automatique d'effets toutes les 5 secondes
@@ -31,7 +34,7 @@ Webcam par défaut (indice 0). Touches :
 # Vidéo en entrée
 ./.venv/bin/python main.py --source video --video input.mp4 --record out.mp4
 
-# Choisir effet + paramètres (ex: gonflement fort, tourbillon doux)
+# Choisir un effet et ses paramètres
 ./.venv/bin/python main.py --effect bulge --effect-param strength=0.8
 ./.venv/bin/python main.py --effect swirl --effect-param swirl_strength=2.5
 
@@ -39,7 +42,7 @@ Webcam par défaut (indice 0). Touches :
 ./.venv/bin/python main.py --device auto
 ```
 
-Détails : `./.venv/bin/python main.py --help`
+Liste complète des options : `./.venv/bin/python main.py --help`
 
 ## Effets
 
@@ -58,12 +61,12 @@ Détails : `./.venv/bin/python main.py --help`
 ./.venv/bin/python scripts/generate_samples.py --dir samples --device cuda
 ```
 
-Génère `samples/identity_<ts>.png` … `samples/kaleidoscope_<ts>.png` + `index.html`, avec assertions de non-régression (forme/domaine/identité).
+Génère `samples/identity_<ts>.png` … `samples/kaleidoscope_<ts>.png` plus un `index.html` pour inspection visuelle, avec assertions de non-régression (formes, bornes [0,1], identité bit-à-bit de l'effet `identity`).
 
 ## Notes
 
-- **Matériel de référence** : utilisé avec NVIDIA RTX 3050 Laptop (4 Go VRAM) / CUDA — `torch.cuda.is_available()` → `True`.
-- **Headless (pas d'écran)** : l'affichage nécessite un `DISPLAY`/`WAYLAND_DISPLAY`. En mode headless, utiliser `--clean` (+ `--record`) : aucun overlay, aucune fenêtre ; le programme bascule automatiquement en mode sans affichage si aucun display n'est disponible.
-- Enregistrement : codec `avc1` (H.264) puis repli `mp4v` ; le flux écrit est toujours la version propre (sans overlay), quel que soit `--clean`.
-- Enregistrement automatiquement propre : `--record` active `--clean`.
-- Date : *current year — 2026*.
+- **Matériel** : testé avec un NVIDIA RTX 3050 Laptop (4 Go VRAM) / CUDA — `torch.cuda.is_available()` → `True`.
+- **Wayland/Hyprland** : le backend d'affichage Qt est forcé sur `xcb` (via XWayland), car OpenCV 5.0 n'embarque pas de plugin wayland.
+- **Enregistrement** : codec `avc1` (H.264) avec repli automatique sur `mp4v`. Le flux écrit est toujours la version propre (sans overlay), quel que soit `--clean` ; `--record` active d'ailleurs `--clean`.
+- **Headless (sans écran)** : l'affichage nécessite un `DISPLAY`/`WAYLAND_DISPLAY`. Sans display, le programme bascule automatiquement en mode sans fenêtre — combiner avec `--clean --record` pour un usage entièrement sans écran.
+- **Performance** : détection accélérée en réduisant le frame à 480 px de large avant l'inférence YuNet (coordonnées rescallées), effet GPU sur crop 256 px — boucle complète ≈ 45 images/s en 1280×720 sur le poste de référence.
