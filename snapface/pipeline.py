@@ -1,4 +1,5 @@
 """Pipeline : capture -> détection -> effet PyTorch -> affichage/enregistrement."""
+import os
 import time
 from pathlib import Path
 
@@ -118,11 +119,21 @@ class Pipeline:
             cv2.imwrite(str(out), frame)
             print(f"[OK] image écrite: {out}")
         if not self.cfg.clean:
+            if self._show(frame, wait=True) is None:
+                print("Aucun affichage possible (pas de DISPLAY ?) — image traitée et écrite quand même.")
+        return 0
+
+    def _show(self, frame: np.ndarray, wait: bool = False) -> int | None:
+        """Affiche frame, retourne la touche lue, ou None sans display."""
+        if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+            return None
+        try:
             cv2.namedWindow("SnapFace", cv2.WINDOW_NORMAL)
             cv2.imshow("SnapFace", frame)
-            cv2.waitKey(0)
+            return (cv2.waitKey(0) or 0) & 0xFF if wait else (cv2.waitKey(1) & 0xFF)
+        except cv2.error:
             cv2.destroyAllWindows()
-        return 0
+            return None
 
     def _run_stream(self) -> int:
         cap, is_file = self._open_source()
@@ -155,11 +166,13 @@ class Pipeline:
                 if not self.cfg.clean:
                     display = frame.copy()
                     self._put_overlay(display)
-                    cv2.namedWindow("SnapFace", cv2.WINDOW_NORMAL)
-                    cv2.imshow("SnapFace", display)
-                    key = cv2.waitKey(1) & 0xFF
-                else:
-                    key = cv2.pollKey() & 0xFF
+                    ret = self._show(display, wait=False)
+                    if ret is None:
+                        print("Aucun affichage possible (pas de DISPLAY ?) — mode sans fenêtre.")
+                        self.cfg.clean = True
+                        key = 0
+                    else:
+                        key = ret
                 if key in (ord('q'), 27):
                     break
                 if ord('1') <= key <= ord('6'):

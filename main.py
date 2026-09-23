@@ -66,6 +66,9 @@ def main() -> int:
         return 1
     try:
         return Pipeline(cfg, source=source, image_path=args.image, video_path=args.video).run()
+    except ValueError as e:
+        print(f"Erreur: {e}")
+        return 1
     except KeyboardInterrupt:
         print("\nArrêt par interruption (Ctrl-C).")
         return 0
