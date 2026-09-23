@@ -1,5 +1,7 @@
 """Pipeline : capture -> détection -> effet PyTorch -> affichage/enregistrement."""
 import os
+
+os.environ["QT_QPA_PLATFORM"] = "xcb"
 import time
 from pathlib import Path
 
