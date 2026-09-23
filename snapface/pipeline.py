@@ -149,6 +149,7 @@ class Pipeline:
             writer = self._make_writer(cap) if self.cfg.record else None
             demo_idx = self.effect_idx
             t_start = time.monotonic()
+            key = 0
             while True:
                 ret, frame = cap.read()
                 if not ret:
