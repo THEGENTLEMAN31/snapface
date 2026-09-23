@@ -39,7 +39,8 @@ def clamp_bbox(box, frame_shape):
 
 def crop_face(frame: np.ndarray, det, expand: float = 0.35):
     """Découpe la région du visage avec marges, retourne (crop, box ajustée)."""
-    x, y, w, h = clamp_bbox(det.box, frame.shape)
+    box = det.box if hasattr(det, "box") else det
+    x, y, w, h = clamp_bbox(box, frame.shape)
     ex, ey = w * expand, h * expand
     cx0, cy0 = max(0, x - ex), max(0, y - ey)
     cx1, cy1 = min(frame.shape[1], x + w + ex), min(frame.shape[0], y + h + ey)
