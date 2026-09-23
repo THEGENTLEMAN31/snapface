@@ -1,0 +1,1 @@
+"""Effet swirl : tourbillon."""

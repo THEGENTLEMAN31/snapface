@@ -1,0 +1,1 @@
+"""Effet bulge : gonflement radial."""

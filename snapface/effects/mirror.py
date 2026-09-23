@@ -1,0 +1,1 @@
+"""Effet mirror : miroir (symétrie)."""

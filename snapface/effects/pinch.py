@@ -1,0 +1,1 @@
+"""Effet pinch : pincement radial."""
