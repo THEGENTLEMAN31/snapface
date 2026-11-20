@@ -36,6 +36,7 @@ class Pipeline:
         self.effects = {n: get_effect(n, device=self.device, params=cfg.effect_params)
                         for n in names}
         self.order = names
+        self.demo_order = [n for n in names if n != "identity"]
         self.effect = self.effects[cfg.effect]
         self._prev_effect = None
         self._morph_t0 = -1e9
@@ -158,7 +159,8 @@ class Pipeline:
         src_fps = cap.get(cv2.CAP_PROP_FPS) or 0.0
         writer = None
         n_written = 0
-        demo_idx = self.order.index(self.effect.name)
+        demo_names = self.demo_order
+        demo_idx = demo_names.index(self.effect.name) if self.effect.name in demo_names else 0
         next_demo = self.cfg.demo_seconds or 0.0
         try:
             self._t0 = time.monotonic()
@@ -174,8 +176,8 @@ class Pipeline:
                     break
                 if self.cfg.demo_seconds and t >= next_demo:
                     next_demo += self.cfg.demo_seconds
-                    demo_idx = (demo_idx + 1) % len(self.order)
-                    self.switch(self.order[demo_idx], t)
+                    demo_idx = (demo_idx + 1) % len(demo_names)
+                    self.switch(demo_names[demo_idx], t)
                 out, info = self.process(frame, t)
                 if info["grid"] is not None and self.cfg.debug_grid:
                     render.draw_grid(out, info["grid"], info["box"])
