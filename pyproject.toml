@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snapface"
+version = "2.0.0"
+description = "Filtres faciaux temps réel : YuNet + déformation de grille PyTorch"
+requires-python = ">=3.12"
+dependencies = ["opencv-python", "numpy", "torch"]
+
+[project.scripts]
+snapface = "snapface.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools]
+packages = ["snapface", "snapface.effects"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
